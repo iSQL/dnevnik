@@ -5,7 +5,6 @@ import { moduleRegistry } from '../core/module-registry.js';
 import { resolveIcon, IcoFire, IcoCoin } from '../ui/icons.jsx';
 import { Pill, XPBar } from '../ui/primitives.jsx';
 import HexRadar from '../ui/HexRadar.jsx';
-import StatusBar from '../ui/StatusBar.jsx';
 import TabBar from '../ui/TabBar.jsx';
 
 function dayKey(ts) {
@@ -40,7 +39,6 @@ export default function Stats() {
 
   return (
     <div className="screen">
-      <StatusBar />
       <div className="screen-body">
         <div className="scroll">
           <div style={{ padding: '12px 20px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>

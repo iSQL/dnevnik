@@ -4,7 +4,6 @@ import { db } from '../core/db.js';
 import { STAT_LABELS, STATS } from '../core/stats.js';
 import { moduleRegistry } from '../core/module-registry.js';
 import { resolveIcon, IcoStar, IcoBolt, IcoFire, IcoChev } from '../ui/icons.jsx';
-import StatusBar from '../ui/StatusBar.jsx';
 import TabBar from '../ui/TabBar.jsx';
 
 const DAY_MS = 86_400_000;
@@ -76,7 +75,6 @@ export default function Recap() {
 
   return (
     <div className="screen">
-      <StatusBar dark />
       <div className="screen-body">
         <div style={{ background: 'linear-gradient(180deg,#7C5CFF 0%,#5A3FE0 100%)', padding: '8px 20px 30px', color: '#fff', borderBottom: '2.5px solid var(--line)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', inset: 0, opacity: 0.15, backgroundImage: 'radial-gradient(#FFD93D 2px, transparent 2px)', backgroundSize: '22px 22px' }} />

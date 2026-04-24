@@ -4,7 +4,6 @@ import { db } from '../core/db.js';
 import { ACHIEVEMENTS } from '../core/achievements.js';
 import { IcoStar } from '../ui/icons.jsx';
 import { Pill } from '../ui/primitives.jsx';
-import StatusBar from '../ui/StatusBar.jsx';
 import TabBar from '../ui/TabBar.jsx';
 
 const RARITIES = ['Sve', 'Otključani', 'Common', 'Rare', 'Epic', 'Legendary'];
@@ -26,7 +25,6 @@ export default function Achievements() {
 
   return (
     <div className="screen">
-      <StatusBar />
       <div className="screen-body">
         <div className="scroll">
           <div style={{ padding: '12px 20px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

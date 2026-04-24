@@ -5,7 +5,6 @@ import { xpEngine } from '../../core/xp-engine.js';
 import { xpProgress, STAT_TINTS, STAT_LABELS, xpForDifficulty } from '../../core/stats.js';
 import { resolveIcon, IcoChev, IcoPlus, IcoStar } from '../../ui/icons.jsx';
 import { Check, XPBar } from '../../ui/primitives.jsx';
-import StatusBar from '../../ui/StatusBar.jsx';
 import TabBar from '../../ui/TabBar.jsx';
 
 const DAY_MS = 86_400_000;
@@ -100,7 +99,6 @@ export default function ModuleDetail({ manifest }) {
 
   return (
     <div className="screen">
-      <StatusBar dark />
       <div className="screen-body">
         <div className="scroll">
           <div style={{ background: color, padding: '8px 20px 24px', borderBottom: '2.5px solid var(--line)', position: 'relative', overflow: 'hidden' }}>

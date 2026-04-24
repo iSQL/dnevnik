@@ -7,7 +7,6 @@ import { xpForDifficulty } from '../core/stats.js';
 import { moduleRegistry } from '../core/module-registry.js';
 import { resolveIcon, IcoFire, IcoStar, IcoBolt, IcoPlus } from '../ui/icons.jsx';
 import { Check } from '../ui/primitives.jsx';
-import StatusBar from '../ui/StatusBar.jsx';
 import TabBar from '../ui/TabBar.jsx';
 
 function dayKey(ts) {
@@ -61,7 +60,6 @@ export default function Quests() {
 
   return (
     <div className="screen">
-      <StatusBar />
       <div className="screen-body">
         <div className="scroll">
           <div style={{ padding: '8px 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

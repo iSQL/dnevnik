@@ -4,7 +4,6 @@ import { db } from '../core/db.js';
 import { DIFFICULTIES, xpForDifficulty } from '../core/stats.js';
 import { moduleRegistry } from '../core/module-registry.js';
 import { resolveIcon, IcoPlus, IcoCoin, IcoX } from '../ui/icons.jsx';
-import StatusBar from '../ui/StatusBar.jsx';
 
 const SCHEDULES = [
   { id: 'daily',  label: 'Dnevno' },
@@ -43,7 +42,6 @@ export default function AddQuest() {
 
   return (
     <div className="screen">
-      <StatusBar />
       <div className="screen-body">
         <div className="scroll" style={{ paddingBottom: 40 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 12px' }}>

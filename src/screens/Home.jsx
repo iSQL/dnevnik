@@ -9,7 +9,6 @@ import { moduleRegistry } from '../core/module-registry.js';
 import { resolveIcon, IcoFire, IcoCoin, IcoPlus } from '../ui/icons.jsx';
 import { Check, XPBar } from '../ui/primitives.jsx';
 import HexRadar from '../ui/HexRadar.jsx';
-import StatusBar from '../ui/StatusBar.jsx';
 import TabBar from '../ui/TabBar.jsx';
 
 const WEEKDAY = ['nedelja', 'ponedeljak', 'utorak', 'sreda', 'četvrtak', 'petak', 'subota'];
@@ -64,7 +63,6 @@ export default function Home() {
 
   return (
     <div className="screen">
-      <StatusBar />
       <div className="screen-body">
         <div className="scroll">
           <div style={{ padding: '8px 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
