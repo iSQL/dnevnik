@@ -1,0 +1,196 @@
+/* Dnevnik — Duolingo-energy gamified life tracker */
+
+:root {
+  --cream: #FFF8EC;
+  --cream-2: #FFF1D9;
+  --ink: #1F1A14;
+  --ink-2: #4A4238;
+  --ink-3: #8C8174;
+  --line: #2A241C;
+
+  --violet: #7C5CFF;
+  --violet-deep: #5A3FE0;
+  --violet-soft: #E8E0FF;
+
+  --green: #2AD17A;
+  --green-deep: #1FA960;
+  --green-soft: #D4F5E3;
+
+  --fire: #FF7A3D;
+  --fire-deep: #E55A1F;
+  --fire-soft: #FFE1D0;
+
+  --coin: #FFC83D;
+  --coin-deep: #E0A820;
+  --coin-soft: #FFF0C2;
+
+  --pink: #FF5CA8;
+  --sky: #3DC9FF;
+  --mint: #5CE0B8;
+  --lavender: #B58CFF;
+  --sun: #FFD93D;
+  --leaf: #8BD94C;
+  --rose: #FF7B9C;
+  --sand: #E8C794;
+
+  --card: #FFFFFF;
+  --shadow: rgba(31, 26, 20, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', -apple-system, sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-feature-settings: "tnum"; }
+
+/* ── SCREEN ── */
+.screen {
+  width: 390px;
+  height: 780px;
+  background: var(--cream);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.statusbar {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px 0 28px;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.statusbar-right { display: flex; gap: 6px; align-items: center; }
+
+.screen-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 100px;
+}
+
+/* ── TABBAR ── */
+.tabbar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 82px;
+  background: var(--card);
+  border-top: 2px solid var(--line);
+  display: flex;
+  padding: 10px 12px 20px;
+  justify-content: space-around;
+  align-items: center;
+}
+.tab { display:flex; flex-direction:column; align-items:center; gap:3px; font-size:11px; font-weight:800; color:var(--ink-3); padding: 4px 10px; }
+.tab.active { color: var(--ink); }
+.tab .tab-dot { width:6px; height:6px; border-radius:50%; background: transparent; }
+.tab.active .tab-dot { background: var(--violet); }
+
+/* ── CHUNKY CARD / BUTTON ── */
+.chunk {
+  background: var(--card);
+  border: 2.5px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 4px 4px 0 var(--line);
+}
+
+.chunk-btn {
+  background: var(--violet);
+  color: #fff;
+  border: 2.5px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 3px 3px 0 var(--line);
+  font-family: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 12px 18px;
+  font-size: 15px;
+}
+
+/* ── PILL ── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 100px;
+  border: 2px solid var(--line);
+  background: #fff;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+/* Scrollbar hide inside artboards */
+.scroll::-webkit-scrollbar { display: none; }
+.scroll { scrollbar-width: none; }
+
+/* ── XP BAR ── */
+.xpbar {
+  height: 10px;
+  background: var(--ink);
+  border-radius: 100px;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid var(--line);
+}
+.xpbar-fill {
+  height: 100%;
+  background: linear-gradient(180deg, #4BE893 0%, #2AD17A 55%, #1FA960 100%);
+  border-right: 2px solid var(--line);
+  position: relative;
+}
+.xpbar-fill::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 6px; right: 6px;
+  height: 2px;
+  background: rgba(255,255,255,0.45);
+  border-radius: 100px;
+}
+
+/* ── ICON TILE (home categories) ── */
+.tile {
+  border: 2.5px solid var(--line);
+  border-radius: 22px;
+  box-shadow: 4px 4px 0 var(--line);
+  padding: 14px 14px 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Big playful headings */
+h1.title { font-size: 28px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.05; }
+h2.title { font-size: 22px; font-weight: 900; letter-spacing: -0.3px; }
+.eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-3); }
+
+.check {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  border: 2.5px solid var(--line);
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.check.done { background: var(--green); }
+
+/* small subtle noise dot for backgrounds */
+.dot-bg {
+  background-image: radial-gradient(var(--line) 1px, transparent 1.2px);
+  background-size: 14px 14px;
+  opacity: 0.06;
+}
