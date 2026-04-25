@@ -1,7 +1,9 @@
+import { useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../core/db.js';
 import { STAT_LABELS, xpProgress } from '../core/stats.js';
 import { moduleRegistry } from '../core/module-registry.js';
+import { exportProfile, downloadProfile, importProfile } from '../core/backup.js';
 import { resolveIcon, IcoFire, IcoCoin } from '../ui/icons.jsx';
 import { Pill, XPBar } from '../ui/primitives.jsx';
 import HexRadar from '../ui/HexRadar.jsx';
@@ -13,9 +15,34 @@ function dayKey(ts) {
 }
 
 export default function Stats() {
+  const fileRef = useRef(null);
   const statsRows = useLiveQuery(() => db.stats.toArray(), []) ?? [];
   const completions = useLiveQuery(() => db.completions.toArray(), []) ?? [];
   const achievements = useLiveQuery(() => db.achievements.toArray(), []) ?? [];
+
+  async function handleExport() {
+    try {
+      const payload = await exportProfile();
+      downloadProfile(payload);
+    } catch (err) {
+      alert('Izvoz neuspeo: ' + (err?.message ?? err));
+    }
+  }
+
+  async function handleImportFile(e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!confirm('Uvezi profil? Tekuće stanje (zadaci, XP, trofeji) biće zamenjeno.')) return;
+    try {
+      const text = await file.text();
+      const payload = JSON.parse(text);
+      await importProfile(payload);
+      alert('Profil uvezen.');
+    } catch (err) {
+      alert('Uvoz neuspeo: ' + (err?.message ?? err));
+    }
+  }
 
   const modules = moduleRegistry.list();
   const totalXp = statsRows.reduce((s, r) => s + r.xp, 0);
@@ -112,7 +139,7 @@ export default function Stats() {
             </div>
           </div>
 
-          <div style={{ padding: '0 20px 24px' }}>
+          <div style={{ padding: '0 20px 14px' }}>
             <h2 className="title" style={{ fontSize: 17, marginBottom: 8 }}>Statistika</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <MiniStat label="Obavljeno" val={completions.length.toLocaleString('sr-Latn-RS')} unit="zadataka" tint="var(--violet)" />
@@ -121,11 +148,39 @@ export default function Stats() {
               <MiniStat label="Dana aktivno" val={days.size} unit="sveukupno" tint="var(--mint)" />
             </div>
           </div>
+
+          <div style={{ padding: '0 20px 24px' }}>
+            <h2 className="title" style={{ fontSize: 17, marginBottom: 8 }}>Profil</h2>
+            <div className="tile" style={{ padding: '14px 14px 12px' }}>
+              <div style={{ fontSize: 12, color: 'var(--ink-3)', fontWeight: 700, marginBottom: 10 }}>
+                Sve lokalno: zadaci, XP, trofeji, podešavanja. Sačuvaj u JSON i prebaci na drugi uređaj.
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <button onClick={handleExport} style={profileBtn('var(--violet)', '#fff')}>Izvezi</button>
+                <button onClick={() => fileRef.current?.click()} style={profileBtn('#fff', 'var(--ink)')}>Uvezi</button>
+              </div>
+              <input ref={fileRef} type="file" accept="application/json,.json" onChange={handleImportFile} style={{ display: 'none' }} />
+            </div>
+          </div>
         </div>
         <TabBar />
       </div>
     </div>
   );
+}
+
+function profileBtn(bg, color) {
+  return {
+    padding: '11px 12px',
+    border: '2.5px solid var(--line)',
+    borderRadius: 12,
+    background: bg,
+    color,
+    fontWeight: 800,
+    fontSize: 13.5,
+    boxShadow: '3px 3px 0 var(--line)',
+    cursor: 'pointer',
+  };
 }
 
 function MiniStat({ label, val, unit, tint }) {
