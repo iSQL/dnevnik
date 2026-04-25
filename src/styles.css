@@ -215,19 +215,18 @@ h2.title { font-size: 22px; font-weight: 900; letter-spacing: -0.3px; }
 .check:active { transform: scale(0.92); }
 .check.done { background: var(--green); }
 
-/* Status bar (cosmetic) */
-.statusbar {
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px 0 28px;
-  font-size: 15px;
-  font-weight: 700;
-  flex-shrink: 0;
-  padding-top: env(safe-area-inset-top, 0px);
+/* Today's quests — slim scrollbar that fits the chunky-card look */
+.today-quests {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(31,26,20,0.25) transparent;
+  overscroll-behavior: contain;
 }
-.statusbar-right { display: flex; gap: 6px; align-items: center; }
+.today-quests::-webkit-scrollbar { width: 6px; }
+.today-quests::-webkit-scrollbar-track { background: transparent; }
+.today-quests::-webkit-scrollbar-thumb {
+  background: rgba(31,26,20,0.25);
+  border-radius: 100px;
+}
 
 /* Toast */
 .toast {

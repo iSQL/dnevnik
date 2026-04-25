@@ -46,9 +46,7 @@ export default function Home() {
   const doneToday = new Set(
     completions.filter((c) => dayKey(c.timestamp) === todayKey).map((c) => c.questId),
   );
-  const todayQuests = quests
-    .filter((q) => q.schedule === 'daily')
-    .slice(0, 5);
+  const todayQuests = quests.filter((q) => q.schedule === 'daily');
   const todayDone = todayQuests.filter((q) => doneToday.has(q.id)).length;
 
   const today = new Date();
@@ -123,7 +121,16 @@ export default function Home() {
               <h2 className="title" style={{ fontSize: 17 }}>Današnji zadaci</h2>
               <span className="mono" style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-3)' }}>{todayDone} / {todayQuests.length}</span>
             </div>
-            <div className="tile" style={{ background: '#fff', padding: '14px 14px 12px' }}>
+            <div
+              className="tile today-quests"
+              style={{
+                background: '#fff',
+                padding: '14px 14px 12px',
+                maxHeight: todayQuests.length > 5 ? 290 : 'none',
+                overflowY: todayQuests.length > 5 ? 'auto' : 'visible',
+                WebkitOverflowScrolling: 'touch',
+              }}
+            >
               {todayQuests.length === 0 ? (
                 <div style={{ fontSize: 13, color: 'var(--ink-3)', fontWeight: 700, padding: '8px 0' }}>
                   Nema aktivnih zadataka. <Link to="/add" style={{ color: 'var(--violet-deep)', fontWeight: 800 }}>Dodaj prvi →</Link>
