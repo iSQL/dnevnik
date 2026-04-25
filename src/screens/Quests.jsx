@@ -15,13 +15,12 @@ function dayKey(ts) {
 }
 
 const FILTERS = [
-  { id: 'active', label: 'Aktivni' },
-  { id: 'done',   label: 'Obavljeni' },
-  { id: 'all',    label: 'Sve' },
+  { id: 'all',  label: 'Sve' },
+  { id: 'done', label: 'Obavljeni' },
 ];
 
 export default function Quests() {
-  const [filter, setFilter] = useState('active');
+  const [filter, setFilter] = useState('all');
 
   const quests = useLiveQuery(() => db.quests.where({ active: 1 }).toArray(), []) ?? [];
   const completions = useLiveQuery(() => db.completions.toArray(), []) ?? [];
@@ -47,9 +46,11 @@ export default function Quests() {
   for (const q of quests) {
     const group = byGroup[q.schedule] ? q.schedule : 'daily';
     const done = doneTodayIds.has(q.id);
-    if (filter === 'active' && done) continue;
     if (filter === 'done' && !done) continue;
     byGroup[group].push({ ...q, done });
+  }
+  for (const g of Object.values(byGroup)) {
+    g.sort((a, b) => Number(a.done) - Number(b.done));
   }
 
   const summary = {

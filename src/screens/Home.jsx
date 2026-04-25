@@ -46,7 +46,10 @@ export default function Home() {
   const doneToday = new Set(
     completions.filter((c) => dayKey(c.timestamp) === todayKey).map((c) => c.questId),
   );
-  const todayQuests = quests.filter((q) => q.schedule === 'daily');
+  const todayQuests = quests
+    .filter((q) => q.schedule === 'daily')
+    .slice()
+    .sort((a, b) => Number(doneToday.has(a.id)) - Number(doneToday.has(b.id)));
   const todayDone = todayQuests.filter((q) => doneToday.has(q.id)).length;
 
   const today = new Date();
