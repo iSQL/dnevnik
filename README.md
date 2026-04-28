@@ -110,8 +110,9 @@ src/
 │   ├── HexRadar.jsx            6-osni SVG radar
 │   ├── TabBar.jsx, Toast.jsx
 │   ├── SendQuestModal.jsx      Bottom-sheet za slanje zadatka prijatelju
-│   └── CreateChallengeModal.jsx Bottom-sheet za pokretanje izazova
-├── screens/                    Home, Quests, CategoryDetail, AddQuest, Stats, Achievements, Recap, Friends
+│   ├── CreateChallengeModal.jsx Bottom-sheet za pokretanje izazova
+│   └── FriendsCards.jsx        Profil + inbox + izazovi + lista prijatelja (renderuje se u Osvrtu)
+├── screens/                    Home, Quests, CategoryDetail, AddQuest, Stats, Achievements, Recap
 └── modules/                    Moduli u v1 + _template/ + _shared/ModuleDetail.jsx
 
 server/
@@ -138,8 +139,8 @@ server/
 | `/add` | Novi zadatak (modul, težina, raspored) |
 | `/stats` | Profil + radar + rangirane grane + lifetime statistika |
 | `/achievements` | Trofejna soba sa filterima |
-| `/recap` | Osvrt na nedelju (XP po granama, najaktivniji dan, istaknuto) |
-| `/friends` | Profil + kod, lista prijatelja, primljeni predlozi, izazovi |
+| `/recap` | Osvrt na nedelju (XP po granama, istaknuto) **+ profil, prijatelji, predlozi, izazovi** |
+| `/friends` | Stari ulaz — redirect na `/recap` (multiplayer je integrisan u Osvrt) |
 
 ## PWA
 
@@ -162,17 +163,17 @@ Server ne čuva nijedan sirov XP unos ili kompletiranje zadataka — samo to št
 **Šta server NE vidi**
 - Pojedinačne kompletacije van tekuće nedelje
 - Pojedinačne kompletacije starije od 10 najnovijih unutar nedelje
-- Bilo koji podaci sa korisnika koji nemaju identitet kreiran na `/friends` ekranu
+- Bilo koji podaci sa korisnika koji nemaju identitet kreiran (sekcija Prijatelji u Osvrtu)
 
 > ⚠️ Imena tvojih zadataka ulaze u summary i vidi ih svaki tvoj prijatelj. Ako imaš zadatke sa intimnim/personalnim imenima, ne šalji ih ili nemoj postavljati profil. Per-quest privacy flag je v2 plan.
 
-**Tok dodavanja prijatelja** — A unese B-jev `friend_code` na `/friends`, server kreira simetričnu vezu odmah. Bez friend request flow-a u v1; ko ne želi, ukloni vezu (DELETE simetrično briše obe strane).
+**Tok dodavanja prijatelja** — A unese B-jev `friend_code` u sekciji Prijatelji u Osvrtu, server kreira simetričnu vezu odmah. Bez friend request flow-a u v1; ko ne želi, ukloni vezu (DELETE simetrično briše obe strane).
 
 **Tok predloga zadatka** — A pritisne paperplane ikonu na svom zadatku → bira prijatelja + opcionu poruku → klijent šalje quest payload (name, moduleId, difficulty, schedule). B vidi predlog u `Predlozi za tebe`. Prihvatanje insertuje novi red u lokalnu `db.quests`. Odbacivanje samo zatvara predlog.
 
 **Tok izazova** — A izabere prijatelja → grana + cilj (XP) + rok → server čuva. Napredak se računa lokalno za sebe (iz `completions`), za protivnika iz njegovog poslednjeg pushed rezimea. Bez serverske arbitraže. Pošiljalac može otkazati pending; bilo koja strana može ukloniti odbijene ili istekle (sa proteklim deadline-om) izazove preko **Ukloni** dugmeta. Aktivni izazovi se ne mogu brisati.
 
-**Sinhronizacija** — pored auto-pusha (sat + visibilitychange), profil prikazuje "Poslednje: pre X" timestamp i ima **Sinhronizuj** dugme za ručni push. Korisno pre nego što pokažeš ekran prijatelju — guraš svoj svežiji rezime gore, prijatelj ga vidi kad tapne **Osveži** na svojoj listi.
+**Sinhronizacija** — pored auto-pusha (sat + visibilitychange), profil u Osvrtu prikazuje "Poslednje: pre X" timestamp i ima **Sinhronizuj** dugme za ručni push. Korisno pre nego što pokažeš ekran prijatelju — guraš svoj svežiji rezime gore, prijatelj ga vidi kad tapne **Osveži** na svojoj listi.
 
 **Endpointi**
 

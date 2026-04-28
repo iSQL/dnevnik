@@ -5,6 +5,7 @@ import { STAT_LABELS, STATS } from '../core/stats.js';
 import { moduleRegistry } from '../core/module-registry.js';
 import { resolveIcon, IcoStar, IcoBolt, IcoFire, IcoChev } from '../ui/icons.jsx';
 import TabBar from '../ui/TabBar.jsx';
+import FriendsCards from '../ui/FriendsCards.jsx';
 
 const DAY_MS = 86_400_000;
 const WEEKDAY_LABEL = ['ned', 'pon', 'uto', 'sre', 'čet', 'pet', 'sub'];
@@ -162,7 +163,7 @@ export default function Recap() {
             </div>
           </div>
 
-          <div style={{ padding: '0 20px 24px' }}>
+          <div style={{ padding: '0 20px 18px' }}>
             <div className="tile" style={{ padding: '14px 14px', background: '#1F1A14', color: '#fff' }}>
               <div className="eyebrow" style={{ color: 'var(--coin)' }}>Naredna nedelja</div>
               <div style={{ fontWeight: 900, fontSize: 16, marginTop: 4 }}>Zadaj sebi izazov</div>
@@ -182,6 +183,17 @@ export default function Recap() {
               </Link>
             </div>
           </div>
+
+          <div style={{ height: 2, background: 'var(--line)', margin: '6px 20px 18px', opacity: 0.15 }} />
+
+          <div style={{ padding: '0 20px 8px' }}>
+            <h2 className="title" style={{ fontSize: 20 }}>Prijatelji</h2>
+            <div style={{ fontSize: 12, color: 'var(--ink-3)', fontWeight: 700, marginTop: 2, marginBottom: 14 }}>
+              Profil, predlozi, izazovi i lista prijatelja.
+            </div>
+          </div>
+
+          <FriendsCards />
         </div>
         <TabBar />
       </div>

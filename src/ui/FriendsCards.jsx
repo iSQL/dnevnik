@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../core/db.js';
 import { bootstrapIdentity } from '../core/identity.js';
@@ -7,9 +6,8 @@ import { pushSync } from '../core/sync.js';
 import { api } from '../core/api.js';
 import { STAT_LABELS, STAT_COLORS } from '../core/stats.js';
 import { moduleRegistry } from '../core/module-registry.js';
-import { IcoX } from '../ui/icons.jsx';
-import TabBar from '../ui/TabBar.jsx';
-import CreateChallengeModal from '../ui/CreateChallengeModal.jsx';
+import { IcoX } from './icons.jsx';
+import CreateChallengeModal from './CreateChallengeModal.jsx';
 
 const DIFF_LABEL = { easy: 'Lako', medium: 'Srednje', hard: 'Teško', epic: 'Epsko' };
 
@@ -21,8 +19,7 @@ function startOfWeek() {
   return d.getTime();
 }
 
-export default function Friends() {
-  const navigate = useNavigate();
+export default function FriendsCards() {
   const idRow = useLiveQuery(() => db.settings.get('identity'), []);
   const identity = idRow?.value ?? null;
 
@@ -74,35 +71,30 @@ export default function Friends() {
   }, [identity?.userId]);
 
   return (
-    <div className="screen">
-      <div className="screen-body">
-        <div className="scroll" style={{ paddingBottom: 40 }}>
-          <Header onClose={() => navigate(-1)} title="Prijatelji" />
-          {identity ? <ProfileView identity={identity} /> : <SetupView />}
+    <>
+      {identity ? <ProfileView identity={identity} /> : <SetupView />}
 
-          {identity && (
-            <>
-              <Inbox items={inbox} onChanged={refreshInbox} />
-              <ChallengesList
-                challenges={challenges}
-                friends={friends}
-                identity={identity}
-                onChanged={refreshChallenges}
-              />
-              <AddFriend onAdded={refreshFriends} />
-              <FriendsList
-                friends={friends}
-                loading={loadingFriends}
-                error={friendsErr}
-                onRefresh={refreshFriends}
-                onRemoved={refreshFriends}
-                onChallenge={(f) => setChallengeTarget(f)}
-              />
-            </>
-          )}
-        </div>
-        <TabBar />
-      </div>
+      {identity && (
+        <>
+          <Inbox items={inbox} onChanged={refreshInbox} />
+          <ChallengesList
+            challenges={challenges}
+            friends={friends}
+            identity={identity}
+            onChanged={refreshChallenges}
+          />
+          <AddFriend onAdded={refreshFriends} />
+          <FriendsList
+            friends={friends}
+            loading={loadingFriends}
+            error={friendsErr}
+            onRefresh={refreshFriends}
+            onRemoved={refreshFriends}
+            onChallenge={(f) => setChallengeTarget(f)}
+          />
+        </>
+      )}
+
       {challengeTarget && (
         <CreateChallengeModal
           friend={challengeTarget}
@@ -110,23 +102,7 @@ export default function Friends() {
           onCreated={refreshChallenges}
         />
       )}
-    </div>
-  );
-}
-
-function Header({ onClose, title }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 12px' }}>
-      <button
-        onClick={onClose}
-        aria-label="Zatvori"
-        style={{ width: 34, height: 34, borderRadius: 10, background: '#fff', border: '2.5px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '2px 2px 0 var(--line)', cursor: 'pointer' }}
-      >
-        <IcoX size={16} />
-      </button>
-      <div style={{ fontWeight: 900, fontSize: 14 }}>{title}</div>
-      <div style={{ width: 34 }} />
-    </div>
+    </>
   );
 }
 
@@ -153,8 +129,8 @@ function SetupView() {
 
   return (
     <div style={{ padding: '0 20px 14px' }}>
-      <h1 className="title" style={{ fontSize: 22 }}>Postavi profil</h1>
-      <p style={{ fontSize: 13, color: 'var(--ink-3)', fontWeight: 600, lineHeight: 1.5, marginTop: 6, marginBottom: 14 }}>
+      <h2 className="title" style={{ fontSize: 17, marginBottom: 6 }}>Postavi profil</h2>
+      <p style={{ fontSize: 13, color: 'var(--ink-3)', fontWeight: 600, lineHeight: 1.5, marginBottom: 12 }}>
         Da bi razmenjivao zadatke i izazove sa prijateljima, treba ti nadimak.
         Sve ostaje na uređaju — samo kratki rezime nedelje ide na server.
       </p>
@@ -166,7 +142,6 @@ function SetupView() {
             onChange={(e) => setHandle(e.target.value)}
             placeholder="npr. Mare"
             maxLength={32}
-            autoFocus
             style={textInputStyle}
           />
         </div>
@@ -482,8 +457,6 @@ function ChallengesList({ challenges, friends, identity, onChanged }) {
   if (!challenges || challenges.length === 0) return null;
 
   const sow = startOfWeek();
-
-  // Group: pending received first, then pending sent, then accepted, then resolved
   const sorted = [...challenges].sort((a, b) => order(a, identity) - order(b, identity));
 
   return (
@@ -508,10 +481,10 @@ function ChallengesList({ challenges, friends, identity, onChanged }) {
 
 function order(c, identity) {
   const isMine = c.from_id === identity.userId;
-  if (c.status === 'pending' && !isMine) return 0;     // pending for me to accept
+  if (c.status === 'pending' && !isMine) return 0;
   if (c.status === 'accepted')           return 1;
-  if (c.status === 'pending' && isMine)  return 2;     // waiting on opponent
-  return 3;                                            // resolved
+  if (c.status === 'pending' && isMine)  return 2;
+  return 3;
 }
 
 function ChallengeCard({ challenge: c, identity, friends, completions, sow, onChanged }) {

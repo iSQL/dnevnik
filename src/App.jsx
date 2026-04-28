@@ -6,7 +6,6 @@ import AddQuest from './screens/AddQuest.jsx';
 import Stats from './screens/Stats.jsx';
 import Achievements from './screens/Achievements.jsx';
 import Recap from './screens/Recap.jsx';
-import Friends from './screens/Friends.jsx';
 import Toast from './ui/Toast.jsx';
 
 export default function App() {
@@ -18,7 +17,7 @@ export default function App() {
         <Route path="/stats" element={<Stats />} />
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/recap" element={<Recap />} />
-        <Route path="/friends" element={<Friends />} />
+        <Route path="/friends" element={<Navigate to="/recap" replace />} />
         <Route path="/add" element={<AddQuest />} />
         <Route path="/c/:moduleId" element={<CategoryDetail />} />
         <Route path="*" element={<Navigate to="/" replace />} />
