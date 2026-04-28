@@ -267,18 +267,17 @@ Sledeći deploy-ovi neće ponovo primenjivati iste migracije (`_migrations` tabe
 | Build Command | `npm run build` |
 | Publish Directory | `dist` |
 
-**Build env var** (u Coolify UI-u, označi "Available during build" ako postoji checkbox):
+**Build env var u Coolify UI-u**:
+
 ```
 VITE_API_URL=https://api.tvojdomen.com
 ```
 
-**Alternativa** — commit-uj `.env.production` u repo root:
-```env
-VITE_API_URL=https://api.tvojdomen.com
-```
-Vite ga automatski koristi pri produkcijskom build-u. URL nije tajna (vidi se u JS bundle-u svejedno).
+> ⚠️ **Mora biti označeno kao "Build variable" / "Is Build Time" / "Available during build"** (zavisi od verzije Coolify-a). Ako nije, Vite ga ne vidi pri build-u i tvoj bundle se peče sa default vrednošću `http://localhost:13337` iz koda — što izgleda kao da konfiguracija "ne radi".
+>
+> ⚠️ **Coolify keširanje slika**: ako pushneš commit i deploy log kaže `Build step skipped` jer SHA već postoji kao image, build se neće ponoviti. Promena env vara automatski tretira config kao izmenjen i forsira rebuild — što je još jedan razlog da koristiš Coolify env var pre nego `.env.production` fajl u repo-u.
 
-**Lokalni dev** ne menja se: `npm run dev` koristi default iz koda (`http://localhost:13337`), ignoriše `.env.production`.
+**Lokalni dev** ne menja se: `npm run dev` koristi default iz koda (`http://localhost:13337`).
 
 ### 4. Verifikacija
 
