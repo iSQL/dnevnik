@@ -9,6 +9,7 @@ import { STAT_LABELS, STAT_COLORS } from '../core/stats.js';
 import { moduleRegistry } from '../core/module-registry.js';
 import { IcoX } from './icons.jsx';
 import CreateChallengeModal from './CreateChallengeModal.jsx';
+import SendQuestModal from './SendQuestModal.jsx';
 
 const DIFF_LABEL = { easy: 'Lako', medium: 'Srednje', hard: 'Teško', epic: 'Epsko' };
 
@@ -30,6 +31,7 @@ export default function FriendsCards() {
   const [inbox, setInbox] = useState([]);
   const [challenges, setChallenges] = useState([]);
   const [challengeTarget, setChallengeTarget] = useState(null);
+  const [recommendTarget, setRecommendTarget] = useState(null);
 
   async function refreshFriends() {
     if (!identity) return;
@@ -94,6 +96,7 @@ export default function FriendsCards() {
             onRefresh={refreshFriends}
             onRemoved={refreshFriends}
             onChallenge={(f) => setChallengeTarget(f)}
+            onRecommend={(f) => setRecommendTarget(f)}
           />
         </>
       )}
@@ -103,6 +106,13 @@ export default function FriendsCards() {
           friend={challengeTarget}
           onClose={() => setChallengeTarget(null)}
           onCreated={refreshChallenges}
+        />
+      )}
+
+      {recommendTarget && (
+        <SendQuestModal
+          preselectedFriend={recommendTarget}
+          onClose={() => setRecommendTarget(null)}
         />
       )}
     </>
@@ -322,7 +332,7 @@ function AddFriend({ onAdded }) {
   );
 }
 
-function FriendsList({ friends, loading, error, onRefresh, onRemoved, onChallenge }) {
+function FriendsList({ friends, loading, error, onRefresh, onRemoved, onChallenge, onRecommend }) {
   return (
     <div style={{ padding: '0 20px 14px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
@@ -341,13 +351,13 @@ function FriendsList({ friends, loading, error, onRefresh, onRemoved, onChalleng
       )}
 
       {friends.map((f) => (
-        <FriendCard key={f.user_id} friend={f} onRemoved={onRemoved} onChallenge={onChallenge} />
+        <FriendCard key={f.user_id} friend={f} onRemoved={onRemoved} onChallenge={onChallenge} onRecommend={onRecommend} />
       ))}
     </div>
   );
 }
 
-function FriendCard({ friend, onRemoved, onChallenge }) {
+function FriendCard({ friend, onRemoved, onChallenge, onRecommend }) {
   const [busy, setBusy] = useState(false);
 
   async function remove() {
@@ -382,7 +392,10 @@ function FriendCard({ friend, onRemoved, onChallenge }) {
         </button>
       </div>
 
-      <div style={{ marginTop: 10 }}>
+      <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <button onClick={() => onRecommend?.(friend)} style={{ ...smallBtn, padding: '6px 12px', fontSize: 11.5 }}>
+          Predloži zadatak
+        </button>
         <button onClick={() => onChallenge?.(friend)} style={{ ...smallBtn, padding: '6px 12px', fontSize: 11.5, background: 'var(--violet)', color: '#fff', borderColor: 'var(--line)' }}>
           Izazovi
         </button>
