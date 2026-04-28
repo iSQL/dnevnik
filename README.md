@@ -31,7 +31,7 @@ npm run build     # produkcijski build u dist/
 npm run preview   # preview produkcijskog builda + aktivan service worker
 ```
 
-Pri prvom pokretanju Dexie inicijalizuje šest veština i seed-uje podrazumevane zadatke iz svakog modula. Stanje ostaje u IndexedDB-u između sesija — otvori DevTools → Application → IndexedDB → `dnevnik` da pogledaš.
+Pri prvom pokretanju Dexie inicijalizuje šest veština i otvara izbornik startnog seta — **Prazno** (0 zadataka), **Minimalno** (1 po grani · 6 ukupno) ili **Preporučeno** (3 po grani + 4 epska · 22 ukupno). Izabrani preset se pamti u `settings.onboardingChoice` i primenjuje i na buduće module (kad neki novi modul stigne u kasnijem build-u, dobiješ taj isti tier zadataka). Stanje ostaje u IndexedDB-u između sesija — otvori DevTools → Application → IndexedDB → `dnevnik` da pogledaš.
 
 **Server** (opciono — samo ako hoćeš multiplayer)
 
@@ -111,7 +111,8 @@ src/
 │   ├── TabBar.jsx, Toast.jsx
 │   ├── SendQuestModal.jsx      Bottom-sheet za slanje zadatka prijatelju
 │   ├── CreateChallengeModal.jsx Bottom-sheet za pokretanje izazova
-│   └── FriendsCards.jsx        Profil + inbox + izazovi + lista prijatelja (renderuje se u Osvrtu)
+│   ├── FriendsCards.jsx        Profil + inbox + izazovi + lista prijatelja (renderuje se u Osvrtu)
+│   └── Onboarding.jsx          Prvi-launch preset chooser (Prazno / Minimalno / Preporučeno)
 ├── screens/                    Home, Quests, CategoryDetail, AddQuest, Stats, Achievements, Recap
 └── modules/                    Moduli u v1 + _template/ + _shared/ModuleDetail.jsx
 
@@ -287,6 +288,7 @@ Vite ga automatski koristi pri produkcijskom build-u. URL nije tajna (vidi se u 
 
 ## Roadmap
 
+- Preset chooser kao re-runnable opcija (npr. "Učitaj startni paket" dugme za korisnike koji su izabrali Prazno pa se predomislili).
 - Push notifikacije za podsetnike o streak-u, predlozima, izazovima.
 - Theme switcher (dark mode).
 - Federisani izvoz/uvoz na bazi snapshot-a (bez servera) za korisnike koji ne žele cloud.

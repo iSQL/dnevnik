@@ -4,13 +4,15 @@ import { HashRouter } from 'react-router-dom';
 import App from './App.jsx';
 import './styles.css';
 
-import { ensureSeeded } from './core/db.js';
+import { db, ensureCoreSeed, seedQuestsForChoice } from './core/db.js';
 import { moduleRegistry } from './core/module-registry.js';
 import { startAchievementsWatcher } from './core/achievements.js';
 import { startSync } from './core/sync.js';
 
 async function boot() {
-  await ensureSeeded(moduleRegistry.list());
+  await ensureCoreSeed();
+  const choice = (await db.settings.get('onboardingChoice'))?.value;
+  if (choice) await seedQuestsForChoice(moduleRegistry.list(), choice);
   startAchievementsWatcher();
   startSync();
 
