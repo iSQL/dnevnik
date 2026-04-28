@@ -189,6 +189,9 @@ function ProfileView({ identity }) {
   const [handle, setHandle] = useState(identity.handle);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const lastSyncRow = useLiveQuery(() => db.settings.get('lastSyncedAt'), []);
+  const lastSyncedAt = lastSyncRow?.value ?? null;
 
   async function copy() {
     try {
@@ -211,6 +214,17 @@ function ProfileView({ identity }) {
       setEditing(false);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function syncNow() {
+    setSyncing(true);
+    try {
+      await pushSync();
+    } catch (e) {
+      alert(friendlyError(e));
+    } finally {
+      setSyncing(false);
     }
   }
 
@@ -254,6 +268,18 @@ function ProfileView({ identity }) {
           <div style={{ fontSize: 11, color: 'var(--ink-3)', fontWeight: 700, marginTop: 8 }}>
             Pošalji ovaj kod prijatelju da bi te dodao.
           </div>
+        </div>
+
+        <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1.5px dashed rgba(31,26,20,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <div style={{ minWidth: 0 }}>
+            <div className="eyebrow" style={{ marginBottom: 2 }}>Sinhronizacija</div>
+            <div style={{ fontSize: 11, color: 'var(--ink-3)', fontWeight: 700 }}>
+              Poslednje: {lastSyncedAt ? relativeTime(lastSyncedAt) : 'još ne'}
+            </div>
+          </div>
+          <button onClick={syncNow} disabled={syncing} style={{ ...smallBtn, padding: '7px 11px', fontSize: 11.5 }}>
+            {syncing ? '...' : 'Sinhronizuj'}
+          </button>
         </div>
       </div>
     </div>
@@ -405,11 +431,47 @@ function FriendCard({ friend, onRemoved, onChallenge }) {
           <div style={{ fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 700, marginTop: 6 }}>
             Ažurirano {synced} {seen && `· aktivan ${seen}`}
           </div>
+
+          {Array.isArray(summary.recentCompletions) && summary.recentCompletions.length > 0 && (
+            <RecentFeed items={summary.recentCompletions} />
+          )}
         </div>
       ) : (
         <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1.5px dashed rgba(31,26,20,0.12)', fontSize: 11.5, color: 'var(--ink-3)', fontWeight: 700 }}>
           Još nije sinhronizovao podatke.
         </div>
+      )}
+    </div>
+  );
+}
+
+function RecentFeed({ items }) {
+  const [open, setOpen] = useState(false);
+  const visible = open ? items : items.slice(0, 3);
+  return (
+    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1.5px dashed rgba(31,26,20,0.12)' }}>
+      <div className="eyebrow" style={{ marginBottom: 6 }}>Poslednje aktivnosti</div>
+      {visible.map((c, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
+          <span style={{ width: 6, height: 6, borderRadius: 100, background: STAT_COLORS[c.stat] ?? 'var(--ink-3)', border: '1.5px solid var(--line)', flexShrink: 0 }} />
+          <span style={{ fontSize: 12, fontWeight: 700, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {c.name}
+          </span>
+          <span className="mono" style={{ fontSize: 10.5, fontWeight: 800, color: 'var(--ink-3)' }}>
+            +{c.amount}
+          </span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--ink-3)', flexShrink: 0 }}>
+            {relativeTime(c.timestamp)}
+          </span>
+        </div>
+      ))}
+      {items.length > 3 && (
+        <button
+          onClick={() => setOpen(!open)}
+          style={{ marginTop: 6, background: 'none', border: 'none', color: 'var(--violet)', fontWeight: 800, fontSize: 11, cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
+        >
+          {open ? 'Sakri' : `Prikaži još ${items.length - 3}`}
+        </button>
       )}
     </div>
   );
@@ -499,6 +561,22 @@ function ChallengeCard({ challenge: c, identity, friends, completions, sow, onCh
     }
   }
 
+  async function removeResolved() {
+    if (!confirm('Ukloniti ovaj izazov?')) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      await api.cancelChallenge(c.id);
+      onChanged?.();
+    } catch (e) {
+      setErr(friendlyError(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const isResolved = c.status === 'declined' || expired;
+
   return (
     <div className="tile" style={{ padding: '14px 14px 12px', background: '#fff', marginBottom: 10 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -538,6 +616,14 @@ function ChallengeCard({ challenge: c, identity, friends, completions, sow, onCh
         <div style={{ marginTop: 10 }}>
           <button onClick={cancel} disabled={busy} style={{ ...smallBtn, padding: '7px 11px', fontSize: 11.5 }}>
             Otkaži
+          </button>
+        </div>
+      )}
+
+      {isResolved && c.status !== 'pending' && (
+        <div style={{ marginTop: 10 }}>
+          <button onClick={removeResolved} disabled={busy} style={{ ...smallBtn, padding: '7px 11px', fontSize: 11.5 }}>
+            Ukloni
           </button>
         </div>
       )}

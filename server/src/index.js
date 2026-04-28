@@ -349,7 +349,11 @@ app.post('/challenge/:id/respond', bearerAuth, async (c) => {
   return c.json(row);
 });
 
-// Sender withdraws a pending challenge.
+// Delete a challenge. Allowed when:
+//   - sender cancels their own pending challenge, OR
+//   - either participant removes a resolved one (declined OR deadline passed).
+// Active (accepted, not yet expired) challenges can't be deleted to prevent
+// rage-quitting mid-race.
 app.delete('/challenge/:id', bearerAuth, async (c) => {
   const challengeId = c.req.param('id');
   if (!isUuid(challengeId)) return c.json({ error: 'invalid_id' }, 400);
@@ -357,9 +361,15 @@ app.delete('/challenge/:id', bearerAuth, async (c) => {
   const { user_id } = c.get('user');
   const result = await sql`
     delete from challenges
-    where id = ${challengeId} and from_id = ${user_id} and status = 'pending'
+    where id = ${challengeId}
+      and (from_id = ${user_id} or to_id = ${user_id})
+      and (
+        (status = 'pending' and from_id = ${user_id})
+        or status = 'declined'
+        or deadline < now()
+      )
   `;
-  if (result.count === 0) return c.json({ error: 'not_found_or_not_cancellable' }, 404);
+  if (result.count === 0) return c.json({ error: 'not_found_or_not_deletable' }, 404);
   return c.json({ ok: true });
 });
 

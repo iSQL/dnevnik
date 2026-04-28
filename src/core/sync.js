@@ -14,10 +14,11 @@ function startOfWeek() {
 
 export async function buildSummary() {
   const since = startOfWeek();
-  const [statsRows, weekCompletions, achievements] = await Promise.all([
+  const [statsRows, weekCompletions, achievements, quests] = await Promise.all([
     db.stats.toArray(),
     db.completions.where('timestamp').above(since).toArray(),
     db.achievements.toArray(),
+    db.quests.toArray(),
   ]);
 
   const perStat = {};
@@ -41,11 +42,29 @@ export async function buildSummary() {
     .slice(0, 5)
     .map((a) => a.id);
 
+  // Last 10 completions of the current week, newest first, with quest name + module.
+  const questById = new Map(quests.map((q) => [q.id, q]));
+  const recentCompletions = weekCompletions
+    .slice()
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .slice(0, 10)
+    .map((c) => {
+      const q = questById.get(c.questId);
+      return {
+        name: q?.name ?? 'Zadatak',
+        moduleId: q?.moduleId ?? null,
+        stat: c.stat,
+        amount: c.amount,
+        timestamp: c.timestamp,
+      };
+    });
+
   return {
     totalXp,
     maxLevel,
     perStat,
     recentAchievements,
+    recentCompletions,
     weekStartedAt: since,
     builtAt: Date.now(),
   };
@@ -55,6 +74,7 @@ export async function pushSync() {
   if (!(await hasIdentity())) return null;
   const payload = await buildSummary();
   await api.syncSummary(payload);
+  await db.settings.put({ key: 'lastSyncedAt', value: Date.now() });
   return payload;
 }
 

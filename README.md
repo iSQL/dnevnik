@@ -154,21 +154,25 @@ Server ne čuva nijedan sirov XP unos ili kompletiranje zadataka — samo to št
 
 **Šta server vidi**
 - `users` — handle, friend_code, last_seen
-- `summaries` — jedan red po korisniku, JSON sa nedeljnim XP-om po grani, nivoom i poslednjim trofejima; klijent gura svaki sat + na fokus tab-a
+- `summaries` — jedan red po korisniku, JSON: nedeljni XP po grani, nivoi, poslednji trofeji, **i poslednjih 10 zadataka iz tekuće nedelje** (ime + moduleId + grana + amount + vreme). Klijent gura svaki sat + na fokus tab-a + ručno preko **Sinhronizuj** dugmeta na profilu.
 - `friends` — simetrične veze
 - `recommendations` — opaque quest payload + opciona poruka, status pending/accepted/declined
 - `challenges` — par + grana + cilj + rok + status
 
 **Šta server NE vidi**
-- Imena pojedinačnih zadataka koje korisnik ne pošalje
-- Pojedinačne kompletacije (ko je radio šta i kada)
+- Pojedinačne kompletacije van tekuće nedelje
+- Pojedinačne kompletacije starije od 10 najnovijih unutar nedelje
 - Bilo koji podaci sa korisnika koji nemaju identitet kreiran na `/friends` ekranu
 
-**Tok dodavanja prijatelja** — A unese B-jev `friend_code` na `/friends`, server kreira simetričnu vezu odmah. Bez friend request flow-a u v1; ko ne želi, ukloni vezu.
+> ⚠️ Imena tvojih zadataka ulaze u summary i vidi ih svaki tvoj prijatelj. Ako imaš zadatke sa intimnim/personalnim imenima, ne šalji ih ili nemoj postavljati profil. Per-quest privacy flag je v2 plan.
+
+**Tok dodavanja prijatelja** — A unese B-jev `friend_code` na `/friends`, server kreira simetričnu vezu odmah. Bez friend request flow-a u v1; ko ne želi, ukloni vezu (DELETE simetrično briše obe strane).
 
 **Tok predloga zadatka** — A pritisne paperplane ikonu na svom zadatku → bira prijatelja + opcionu poruku → klijent šalje quest payload (name, moduleId, difficulty, schedule). B vidi predlog u `Predlozi za tebe`. Prihvatanje insertuje novi red u lokalnu `db.quests`. Odbacivanje samo zatvara predlog.
 
-**Tok izazova** — A izabere prijatelja → grana + cilj (XP) + rok → server čuva. Napredak se računa lokalno za sebe (iz `completions`), za protivnika iz njegovog poslednjeg pushed rezimea. Bez serverske arbitraže.
+**Tok izazova** — A izabere prijatelja → grana + cilj (XP) + rok → server čuva. Napredak se računa lokalno za sebe (iz `completions`), za protivnika iz njegovog poslednjeg pushed rezimea. Bez serverske arbitraže. Pošiljalac može otkazati pending; bilo koja strana može ukloniti odbijene ili istekle (sa proteklim deadline-om) izazove preko **Ukloni** dugmeta. Aktivni izazovi se ne mogu brisati.
+
+**Sinhronizacija** — pored auto-pusha (sat + visibilitychange), profil prikazuje "Poslednje: pre X" timestamp i ima **Sinhronizuj** dugme za ručni push. Korisno pre nego što pokažeš ekran prijatelju — guraš svoj svežiji rezime gore, prijatelj ga vidi kad tapne **Osveži** na svojoj listi.
 
 **Endpointi**
 
@@ -187,10 +191,98 @@ POST   /recommend/:id/respond    { accept }
 POST   /challenge                { to, stat, goal, deadline }
 GET    /challenges               svi (poslati + primljeni)
 POST   /challenge/:id/respond    { accept }
-DELETE /challenge/:id            pošiljalac otkazuje pending
+DELETE /challenge/:id            pošiljalac otkazuje pending; bilo ko briše declined ili expired
 ```
 
-**Deploy** — Dockerfile spreman za Coolify. Postavi `DATABASE_URL` i `PORT` env vare; pokreni `npm run migrate:prod` jednom posle prvog deploy-a da primeniš šemu. Klijent buildaj sa `VITE_API_URL=https://api.tvojdomain.com`.
+## Deploy na Coolify
+
+Pretpostavlja se da već imaš Coolify instancu (mi koristimo na Hetzner VPS-u) i Postgres bazu (managed Coolify resource ili manuelno preko docker-compose-a — oba rade).
+
+### 1. Push repo na git
+
+Coolify pull-uje iz Github-a/Gitlab-a, pa server kod i Dockerfile moraju biti u remote-u.
+
+### 2. Server (API)
+
+**+ New Resource** → **Public Repository** (ili Private uz GitHub App):
+
+| Polje | Vrednost |
+|---|---|
+| Repository | URL repo-a |
+| Branch | `main` |
+| Build Pack | **Dockerfile** |
+| Base Directory | `/server` ← **kritično**, inače Coolify build-uje iz root-a i ne vidi Dockerfile |
+| Port | `8787` |
+
+**Networking sa Postgres-om** — Coolify-managed Postgres je već na `coolify` Docker mreži. Tvoj API kontejner posle deploy-a takođe će biti tu, pa može da resolve-uje Postgres po Coolify resource UUID-u kao hostname-u. Izvuci ga iz inspect-a:
+
+```bash
+docker inspect <postgres-container> --format '{{json .NetworkSettings.Networks.coolify.Aliases}}'
+```
+
+Hostname je nešto kao `yssskgs8o48cs08k0o48ss4s` (Coolify resource UUID). **Internal port** je uvek `5432` — ne onaj javni što si možda namestio (npr. `13337`).
+
+**Env vars** u Coolify UI-u (samo vrednosti, **bez** `KEY=` prefiksa u value polju):
+
+```
+DATABASE_URL=postgres://dnevnik_app:STRONG_PASS@yssskgs8o48cs08k0o48ss4s:5432/dnevnik
+ALLOWED_ORIGINS=https://dnevnik.tvojdomen.com
+PORT=8787
+```
+
+> ⚠️ **Password gotchas**: izbegavaj URL-special karaktere (`@`, `:`, `/`, `?`, `#`, `%`, space). Ako su u password-u, URL-encode-uj (`@` → `%40`) ili — bolje — promeni na čistu alfanumeriku.
+> ⚠️ Ne kucaj `DATABASE_URL=` u value polje. Coolify dodaje key automatski. Inače dobiješ `DATABASE_URL=DATABASE_URL=postgres://...` i parsiranje pukne.
+
+**Deploy** → očekivani log:
+```
+dnevnik-server listening on http://localhost:8787
+```
+
+**Prva migracija** — jedanput posle prvog uspešnog boot-a, otvori Terminal tab u Coolify resource UI-u (ili `docker exec`):
+
+```bash
+npm run migrate:prod
+# applying 001_init.sql
+# applying 002_auth_secret.sql
+# applied 2 migration(s)
+```
+
+Sledeći deploy-ovi neće ponovo primenjivati iste migracije (`_migrations` tabela ih prati).
+
+**Domen** — Coolify daje `*.sslip.io` automatski uz Let's Encrypt SSL. Za vlastiti domen: A record na VPS IP → dodaj domain u Coolify resource → cert se sam podigne.
+
+**Health check** (opciono, ali korisno) — Path `/health`, Port `8787`, Interval `30s`. Ako Postgres padne, ruta vraća non-200 i Coolify restartuje kontejner.
+
+### 3. Client (PWA)
+
+`VITE_API_URL` se peče u JS bundle pri build-u (Vite ne može da ga čita run-time-om), pa mora biti postavljen pre `npm run build`-a.
+
+**+ New Resource** → **Public Repository**:
+
+| Polje | Vrednost |
+|---|---|
+| Build Pack | **Static** (ili Nixpacks) |
+| Build Command | `npm run build` |
+| Publish Directory | `dist` |
+
+**Build env var** (u Coolify UI-u, označi "Available during build" ako postoji checkbox):
+```
+VITE_API_URL=https://api.tvojdomen.com
+```
+
+**Alternativa** — commit-uj `.env.production` u repo root:
+```env
+VITE_API_URL=https://api.tvojdomen.com
+```
+Vite ga automatski koristi pri produkcijskom build-u. URL nije tajna (vidi se u JS bundle-u svejedno).
+
+**Lokalni dev** ne menja se: `npm run dev` koristi default iz koda (`http://localhost:13337`), ignoriše `.env.production`.
+
+### 4. Verifikacija
+
+1. Otvori `https://api.tvojdomen.com/health` → očekuj `{"ok":true,"now":"..."}`.
+2. Otvori PWA na produkcijskom URL-u → DevTools → Network → tapni **Sinhronizuj** na profilu → potvrdi da `/sync` request ide na produkcijski API, ne na `localhost:13337`.
+3. Iz drugog browser/incognito prozora → kreiraj drugi profil → razmeni friend code-ove → testiraj kompletan tok (predlog + izazov).
 
 ## Roadmap
 
