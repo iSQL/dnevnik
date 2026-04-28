@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../core/db.js';
 import { STAT_LABELS, xpProgress } from '../core/stats.js';
@@ -16,9 +17,11 @@ function dayKey(ts) {
 
 export default function Stats() {
   const fileRef = useRef(null);
+  const navigate = useNavigate();
   const statsRows = useLiveQuery(() => db.stats.toArray(), []) ?? [];
   const completions = useLiveQuery(() => db.completions.toArray(), []) ?? [];
   const achievements = useLiveQuery(() => db.achievements.toArray(), []) ?? [];
+  const identity = useLiveQuery(() => db.settings.get('identity'), [])?.value ?? null;
 
   async function handleExport() {
     try {
@@ -147,6 +150,35 @@ export default function Stats() {
               <MiniStat label="Trofeji" val={achievements.length} unit="otkljucani" tint="var(--coin)" />
               <MiniStat label="Dana aktivno" val={days.size} unit="sveukupno" tint="var(--mint)" />
             </div>
+          </div>
+
+          <div style={{ padding: '0 20px 14px' }}>
+            <h2 className="title" style={{ fontSize: 17, marginBottom: 8 }}>Prijatelji</h2>
+            <button
+              onClick={() => navigate('/friends')}
+              style={{
+                width: '100%', textAlign: 'left', cursor: 'pointer',
+                padding: '14px 16px', borderRadius: 14,
+                border: '2.5px solid var(--line)',
+                background: identity ? 'var(--violet)' : '#fff',
+                color: identity ? '#fff' : 'var(--ink)',
+                boxShadow: '3px 3px 0 var(--line)',
+                fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 900, fontSize: 14 }}>
+                  {identity ? identity.handle : 'Postavi profil'}
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, opacity: 0.85, marginTop: 2 }}>
+                  {identity
+                    ? `Kod: ${identity.friendCode} · upravljaj prijateljima`
+                    : 'Dodaj prijatelje, šalji predloge, izazovi se'}
+                </div>
+              </div>
+              <span style={{ fontSize: 18, fontWeight: 900 }}>›</span>
+            </button>
           </div>
 
           <div style={{ padding: '0 20px 24px' }}>

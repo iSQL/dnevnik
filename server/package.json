@@ -1,0 +1,21 @@
+{
+  "name": "dnevnik-server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Multiplayer sync backend for dnevnik (friends, recommendations, challenges)",
+  "scripts": {
+    "dev": "node --watch --env-file=.env src/index.js",
+    "start": "node src/index.js",
+    "migrate": "node --env-file=.env src/migrate.js",
+    "migrate:prod": "node src/migrate.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.6.14",
+    "postgres": "^3.4.5"
+  },
+  "engines": {
+    "node": ">=20.6"
+  }
+}

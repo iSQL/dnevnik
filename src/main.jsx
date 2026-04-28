@@ -7,10 +7,12 @@ import './styles.css';
 import { ensureSeeded } from './core/db.js';
 import { moduleRegistry } from './core/module-registry.js';
 import { startAchievementsWatcher } from './core/achievements.js';
+import { startSync } from './core/sync.js';
 
 async function boot() {
   await ensureSeeded(moduleRegistry.list());
   startAchievementsWatcher();
+  startSync();
 
   ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>

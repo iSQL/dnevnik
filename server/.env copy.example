@@ -1,0 +1,12 @@
+# Copy to .env and fill in real values. Never commit .env.
+
+# Server
+PORT=8787
+
+# Connection to your shared Postgres on the VPS.
+# Use the per-app user/db you create in 002_provision.sql, NOT the superuser.
+DATABASE_URL=postgres://dnevnik_app:CHANGE_ME@116.203.232.189:13337/dnevnik
+
+# Optional: comma-separated origins allowed to call the API in CORS.
+# Leave empty for "*". For production, list your PWA's origin(s).
+ALLOWED_ORIGINS=

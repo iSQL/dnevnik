@@ -12,7 +12,15 @@
       "Bash(git init *)",
       "Bash(git branch *)",
       "Bash(curl -sSL https://www.gnu.org/licenses/agpl-3.0.txt -o c:/Git/dnevnik/LICENSE.md)",
-      "Bash(grep -E \"\\(README|LICENSE|\\\\.gitignore|\\\\.git$\\)\")"
+      "Bash(grep -E \"\\(README|LICENSE|\\\\.gitignore|\\\\.git$\\)\")",
+      "Bash(curl -s -m 3 http://localhost:13337/health)",
+      "Bash(curl -sf -m 1 http://localhost:13337/health)",
+      "Bash(curl -s -X POST http://localhost:13337/me -H 'Content-Type: application/json' -d '{\"auth_secret\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"handle\":\"Mare\"}')",
+      "Bash(curl -s http://localhost:13337/me -H 'Authorization: Bearer a1b2c3d4-e5f6-7890-abcd-ef1234567890')",
+      "Bash(curl -s -X POST http://localhost:13337/sync -H 'Authorization: Bearer a1b2c3d4-e5f6-7890-abcd-ef1234567890' -H 'Content-Type: application/json' -d '{\"level\":7,\"weekXp\":{\"fitness\":240,\"intellect\":180},\"streaks\":{\"workout\":12}}')",
+      "Bash(curl -s http://localhost:13337/me/summary -H 'Authorization: Bearer a1b2c3d4-e5f6-7890-abcd-ef1234567890')",
+      "Bash(curl -s -o /dev/null -w \"status: %{http_code}\" http://localhost:13337/me)",
+      "Bash(curl -sf -m 1 http://localhost:5173)"
     ]
   }
 }

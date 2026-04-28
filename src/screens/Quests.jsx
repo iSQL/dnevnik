@@ -5,9 +5,10 @@ import { db } from '../core/db.js';
 import { xpEngine } from '../core/xp-engine.js';
 import { xpForDifficulty } from '../core/stats.js';
 import { moduleRegistry } from '../core/module-registry.js';
-import { resolveIcon, IcoFire, IcoStar, IcoBolt, IcoPlus } from '../ui/icons.jsx';
+import { resolveIcon, IcoFire, IcoStar, IcoBolt, IcoPlus, IcoSend } from '../ui/icons.jsx';
 import { Check } from '../ui/primitives.jsx';
 import TabBar from '../ui/TabBar.jsx';
+import SendQuestModal from '../ui/SendQuestModal.jsx';
 
 function dayKey(ts) {
   const d = new Date(ts);
@@ -21,9 +22,11 @@ const FILTERS = [
 
 export default function Quests() {
   const [filter, setFilter] = useState('all');
+  const [sharing, setSharing] = useState(null);
 
   const quests = useLiveQuery(() => db.quests.where({ active: 1 }).toArray(), []) ?? [];
   const completions = useLiveQuery(() => db.completions.toArray(), []) ?? [];
+  const identity = useLiveQuery(() => db.settings.get('identity'), [])?.value ?? null;
 
   const todayKey = dayKey(Date.now());
   const doneTodayIds = new Set(
@@ -101,22 +104,23 @@ export default function Quests() {
           </div>
 
           <QGroup title="Dnevno" sub="Resetuje se u ponoć" icon={<IcoFire size={18} />} tint="var(--coin)">
-            {byGroup.daily.map((q, i) => <QItem key={q.id} q={q} onCheck={() => checkOff(q)} onDelete={() => deleteQuest(q)} last={i === byGroup.daily.length - 1} />)}
+            {byGroup.daily.map((q, i) => <QItem key={q.id} q={q} onCheck={() => checkOff(q)} onDelete={() => deleteQuest(q)} onShare={identity ? () => setSharing(q) : null} last={i === byGroup.daily.length - 1} />)}
             {byGroup.daily.length === 0 && <EmptyRow />}
           </QGroup>
 
           <QGroup title="Nedeljno" sub="Do kraja nedelje" icon={<IcoStar size={16} fill="#FF7A3D" />} tint="var(--fire)">
-            {byGroup.weekly.map((q, i) => <QItem key={q.id} q={q} onCheck={() => checkOff(q)} onDelete={() => deleteQuest(q)} last={i === byGroup.weekly.length - 1} />)}
+            {byGroup.weekly.map((q, i) => <QItem key={q.id} q={q} onCheck={() => checkOff(q)} onDelete={() => deleteQuest(q)} onShare={identity ? () => setSharing(q) : null} last={i === byGroup.weekly.length - 1} />)}
             {byGroup.weekly.length === 0 && <EmptyRow />}
           </QGroup>
 
           <QGroup title="Epsko" sub="Dugotrajno. Spremi grickalice." icon={<IcoBolt size={16} fill="#7C5CFF" />} tint="var(--violet)" last>
-            {byGroup.epic.map((q, i) => <QItem key={q.id} q={q} onCheck={() => checkOff(q)} onDelete={() => deleteQuest(q)} last={i === byGroup.epic.length - 1} epic />)}
+            {byGroup.epic.map((q, i) => <QItem key={q.id} q={q} onCheck={() => checkOff(q)} onDelete={() => deleteQuest(q)} onShare={identity ? () => setSharing(q) : null} last={i === byGroup.epic.length - 1} epic />)}
             {byGroup.epic.length === 0 && <EmptyRow />}
           </QGroup>
         </div>
         <TabBar />
       </div>
+      {sharing && <SendQuestModal quest={sharing} onClose={() => setSharing(null)} />}
     </div>
   );
 }
@@ -149,12 +153,12 @@ function QGroup({ title, sub, icon, tint, children, last }) {
   );
 }
 
-function QItem({ q, onCheck, onDelete, last, epic }) {
+function QItem({ q, onCheck, onDelete, onShare, last, epic }) {
   const m = moduleRegistry.get(q.moduleId);
   const Icon = resolveIcon(m?.icon);
   const tint = m?.color || 'var(--violet)';
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '9px 2px', borderBottom: last ? 'none' : '1.5px dashed rgba(31,26,20,0.12)' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 2px', borderBottom: last ? 'none' : '1.5px dashed rgba(31,26,20,0.12)' }}>
       <Check done={q.done} tint={tint} onClick={onCheck} />
       <div style={{ width: 30, height: 30, borderRadius: 9, background: tint, border: '2px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <Icon size={18} />
@@ -168,6 +172,11 @@ function QItem({ q, onCheck, onDelete, last, epic }) {
           <span style={{ fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 700 }}>{m?.name}</span>
         </div>
       </div>
+      {onShare && (
+        <button onClick={onShare} aria-label="Pošalji prijatelju" title="Pošalji prijatelju" style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: 'var(--ink-3)', display: 'flex', alignItems: 'center' }}>
+          <IcoSend size={15} stroke="currentColor" />
+        </button>
+      )}
       <button onClick={onDelete} aria-label="Obriši" style={{ background: 'none', border: 'none', color: 'var(--ink-3)', fontSize: 18, lineHeight: 1, padding: 4, cursor: 'pointer' }}>×</button>
       <div className="mono" style={{ fontWeight: 800, fontSize: 12.5, color: q.done ? 'var(--ink-3)' : 'var(--green-deep)', flexShrink: 0 }}>+{xpForDifficulty(q.difficulty)}</div>
     </div>

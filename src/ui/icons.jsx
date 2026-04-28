@@ -154,6 +154,13 @@ export const IcoX = ({ size = 18, stroke = '#1F1A14' }) => (
   </svg>
 );
 
+export const IcoSend = ({ size = 16, stroke = '#1F1A14' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 2 L11 13" />
+    <path d="M22 2 L15 22 L11 13 L2 9 Z" />
+  </svg>
+);
+
 // Tab icons
 export const TabHome = ({ active }) => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? '#7C5CFF' : 'none'} stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round">
