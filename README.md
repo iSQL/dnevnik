@@ -285,6 +285,27 @@ VITE_API_URL=https://api.tvojdomen.com
 2. Otvori PWA na produkcijskom URL-u → DevTools → Network → tapni **Sinhronizuj** na profilu → potvrdi da `/sync` request ide na produkcijski API, ne na `localhost:13337`.
 3. Iz drugog browser/incognito prozora → kreiraj drugi profil → razmeni friend code-ove → testiraj kompletan tok (predlog + izazov).
 
+### 5. Održavanje (manuelno)
+
+`users.last_seen_at` se ažurira pri svakom autentifikovanom zahtevu (auth middleware). Periodično (par puta godišnje) pogledaj ko je odavno bio aktivan i očisti neaktivne profile ručno.
+
+**Audit** — ko miruje i koliko dugo:
+
+```sql
+SELECT handle, friend_code, last_seen_at,
+       NOW() - last_seen_at AS idle_for
+FROM users
+ORDER BY last_seen_at;
+```
+
+**Prune** — briše neaktivne profile starije od 6 meseci. Strane tabele (`summaries`, `friends`, `recommendations`, `challenges`) imaju `ON DELETE CASCADE` pa se sve njihovo prati u istom DELETE-u.
+
+```sql
+DELETE FROM users WHERE last_seen_at < NOW() - INTERVAL '6 months';
+```
+
+> ⚠️ Hard-delete znači da korisnik koji se vrati posle pruning-a sa istim `auth_secret`-om više nije prepoznat — mora ponovo da postavi profil i dobiće novi `friend_code`. Stari prijatelji ga gube iz liste (FK cascade ih briše). Drži threshold konzervativno — 6 meseci je razumno za hobi-skalu.
+
 ## Roadmap
 
 - Preset chooser kao re-runnable opcija (npr. "Učitaj startni paket" dugme za korisnike koji su izabrali Prazno pa se predomislili).
