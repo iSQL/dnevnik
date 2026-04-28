@@ -2,6 +2,7 @@ import { db } from './db.js';
 import { STATS } from './stats.js';
 import { api } from './api.js';
 import { hasIdentity } from './identity.js';
+import { refreshBadge } from './badge.js';
 
 // Monday 00:00 of the current week (local time).
 function startOfWeek() {
@@ -75,6 +76,7 @@ export async function pushSync() {
   const payload = await buildSummary();
   await api.syncSummary(payload);
   await db.settings.put({ key: 'lastSyncedAt', value: Date.now() });
+  refreshBadge().catch((err) => console.warn('badge refresh after sync failed', err));
   return payload;
 }
 
@@ -95,6 +97,7 @@ export function startSync({ intervalMs = 60 * 60 * 1000 } = {}) {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         pushSync().catch((err) => console.warn('visibility sync failed', err));
+        refreshBadge().catch((err) => console.warn('visibility badge refresh failed', err));
       }
     });
   }

@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../core/db.js';
 import { bootstrapIdentity } from '../core/identity.js';
 import { pushSync } from '../core/sync.js';
+import { refreshBadge } from '../core/badge.js';
 import { api } from '../core/api.js';
 import { STAT_LABELS, STAT_COLORS } from '../core/stats.js';
 import { moduleRegistry } from '../core/module-registry.js';
@@ -48,6 +49,7 @@ export default function FriendsCards() {
     if (!identity) return;
     try {
       setInbox(await api.inbox('pending'));
+      refreshBadge().catch((err) => console.warn('badge refresh failed', err));
     } catch (e) {
       console.warn('inbox load failed', e);
     }
@@ -57,6 +59,7 @@ export default function FriendsCards() {
     if (!identity) return;
     try {
       setChallenges(await api.listChallenges());
+      refreshBadge().catch((err) => console.warn('badge refresh failed', err));
     } catch (e) {
       console.warn('challenges load failed', e);
     }

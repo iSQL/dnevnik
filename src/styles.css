@@ -112,6 +112,7 @@ a { color: inherit; text-decoration: none; }
   z-index: 50;
 }
 .tab {
+  position: relative;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   font-size: 11px; font-weight: 800; color: var(--ink-3);
   padding: 4px 10px;
@@ -120,6 +121,25 @@ a { color: inherit; text-decoration: none; }
 .tab.active { color: var(--ink); }
 .tab .tab-dot { width: 6px; height: 6px; border-radius: 50%; background: transparent; }
 .tab.active .tab-dot { background: var(--violet); }
+.tab-badge {
+  position: absolute;
+  top: 2px;
+  right: calc(50% - 20px);
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--violet);
+  color: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 100px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
 
 /* ── CHUNKY CARD / BUTTON ── */
 .chunk {
